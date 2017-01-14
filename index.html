@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title></title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.30.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.30.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+</head>
+<body>
+
+<!-- START:Added to test legends -->
+
+<style>
+.legend {
+    background-color: #fff;
+    border-radius: 3px;
+    bottom: 30px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.10);
+    font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    padding: 10px;
+    position: absolute;
+    right: 10px;
+    z-index: 1;
+}
+.legend h4 {
+    margin: 0 0 10px;
+}
+.legend div span {
+    border-radius: 50%;
+    display: inline-block;
+    height: 10px;
+    margin-right: 5px;
+    width: 10px;
+    opacity: 1;
+}
+    #fly {
+        display: block;
+        position: absolute;
+        /*top: 30px;*/
+        bottom:30px;
+        left: 45%;
+        margin: 0px auto;
+        width: 11%;
+        height: 50px;
+        padding: 10px;
+        border: none;
+        border-radius: 3px;
+        font-size: 12px;
+        text-align: center;
+        color: #fff;
+        background: #999999;
+        z-index: 1;
+    }
+        #next {
+        display: block;
+        position: absolute;
+        /*top: 30px;*/
+        bottom:30px;
+        left: 51%;
+        margin: 0px auto;
+        width: 5%;
+        height: 40px;
+        padding: 10px;
+        border: none;
+        border-radius: 3px;
+        font-size: 12px;
+        text-align: center;
+        color: #000;
+        background: #ffffff;
+        opacity: 0.5;
+    }
+        #previous {
+        display: block;
+        position: absolute;
+        /*top: 30px;*/
+        bottom:30px;
+        left: 45%;
+        margin: 0px auto;
+        width: 5%;
+        height: 40px;
+        padding: 10px;
+        border: none;
+        border-radius: 3px;
+        font-size: 12px;
+        text-align: center;
+        color: #000;
+        background: #ffffff;
+        opacity: 0.5;
+    }
+</style>
+
+<!-- END:Added to test legends -->
+
+<div id='map'></div>
+
+</br>
+<button id='fly'>Enter the tastes of Platinum city</button>
+<button id='previous'>Previous</button>
+<button id='next'>Next</button>
+
+<!-- START:Added to test legends -->
+
+<div class='legend'>
+    <h4>Type of Tastes</h4>
+    <div><span style='background-color: #b000d6'></span>Sweet</div>
+    <div><span style='background-color: #f9a94b'></span>Sour</div>
+    <div><span style='background-color: #4dc160'></span>Minty</div>
+    <div><span style='background-color: #fcee21'></span>Chatpata</div>
+    <div><span style='background-color: #597025'></span>Bitter</div>
+    <div><span style='background-color: #ed1c25'></span>Spicy</div>
+    <div><span style='background-color: #999999'></span>Tasteless</div>
+<br>
+<br>
+    <h4>Taste Intensity</h4>
+    <div></span>The higher the internsity of taste,<br> the denser the circles along the path</div>
+    <div></span><i>Hover over any icon</i></div>
+
+
+</div>
+
+<!-- END:Added to test legends -->
+
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoiYXJpdHJvc2FoYSIsImEiOiJjaXhyaWZxMjUwN2lmMzJtc2NqMjB5dnQ3In0.HmPqYvxSZSPQv_ehRHAYyw';
+var end = [77.534934, 13.034589];
+var start = [77.53485, 13.03459];
+// var start = [77.531891, 13.036366];
+// var end = [74.50, 40];
+var map = new mapboxgl.Map({
+    container: 'map', // container id
+    style: 'mapbox://styles/aritrosaha/cixuewbm500612ro5sehdrgda', //stylesheet location
+    center: [77.53546,13.03460],
+    zoom: 15,
+});
+// Create a popup, but don't add it to the map yet.
+var popup = new mapboxgl.Popup({
+    closeButton: false,
+    closeOnClick: false
+});
+map.on('mousemove', function(e) {
+    var features = map.queryRenderedFeatures(e.point, { layers: ['cooking chat','cooking spicy','concrete','trees','barren','kids','supermarket','parking','pathway sour','smoke','chai','bisciut','friends','garden','pathway','stagnant'] });
+    // console.log("Hello");
+    // Change the cursor style as a UI indicator.
+    map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
+    if (!features.length) {
+        popup.remove();
+        return;
+    }
+    var feature = features[0];
+    // Populate the popup and set its coordinates
+    // based on the feature found.
+    popup.setLngLat(feature.geometry.coordinates)
+        .setHTML("The taste here was <b>"+feature.properties.type+"</b> from <b>"+feature.properties.source+"</b>")
+        .addTo(map);
+});
+var isAtStart = true;
+document.getElementById('fly').addEventListener('click', function() {
+    // depending on whether we're currently at point a or b, aim for
+    // point a or b
+    var target = isAtStart ? end : start;
+    document.getElementById("fly").style.display="none";
+    // and now we're at the opposite point
+    isAtStart = !isAtStart;
+    map.flyTo({
+        // These options control the ending camera position: centered at
+        // the target, at zoom level 9, and north up.
+        center: target,
+        zoom: 20,
+        // bearing: 0,
+        bearing: -71.20,
+        pitch: 60,
+        // These options control the flight curve, making it move
+        // slowly and zoom out almost completely before starting
+        // to pan.
+        speed: 0.8, // make the flying slow
+        curve: 0.8, // change the speed at which it zooms out
+        // This can be any easing function: it takes a number between
+        // 0 and 1 and returns another number between 0 and 1.
+        easing: function (t) {
+            return t;
+        }
+    });
+});
+var LocationNo = 1;
+var LocationLatLong = [[77.534808, 13.034791],[77.534727, 13.034982],[77.534773, 13.035224],[77.534715, 13.035209],[77.534521, 13.034682],[77.534450, 13.034756],[77.534344, 13.034718],[77.534144, 13.034674],[77.534187, 13.034910],[77.533642, 13.035170],[77.532118, 13.036681],[77.531793, 13.036647],[77.531812, 13.037403],[77.531550, 13.037767],[77.532379, 13.038255],[77.532505, 13.038193],[77.532738, 13.038033],[77.533986, 13.037314]];
+document.getElementById('next').addEventListener('click', function() {
+    if (LocationNo == LocationLatLong.length){
+        LocationNo = 0;
+    }
+
+    map.flyTo({
+        // These options control the ending camera position: centered at
+        // the target, at zoom level 9, and north up.
+        center: LocationLatLong[LocationNo],
+        zoom: 20,
+        // bearing: 0,
+        bearing: -71.20,
+        pitch: 60,
+        // These options control the flight curve, making it move
+        // slowly and zoom out almost completely before starting
+        // to pan.
+        speed: 0.8, // make the flying slow
+        curve: 0.8, // change the speed at which it zooms out
+        // This can be any easing function: it takes a number between
+        // 0 and 1 and returns another number between 0 and 1.
+        easing: function (t) {
+            return t;
+        }
+    });
+    LocationNo++;
+});
+document.getElementById('previous').addEventListener('click', function() {
+    if (LocationNo > 0){
+        map.flyTo({
+            // These options control the ending camera position: centered at
+            // the target, at zoom level 9, and north up.
+            center: LocationLatLong[--LocationNo],
+            zoom: 20,
+            // bearing: 0,
+            bearing: -71.20,
+            pitch: 60,
+            // These options control the flight curve, making it move
+            // slowly and zoom out almost completely before starting
+            // to pan.
+            speed: 0.8, // make the flying slow
+            curve: 0.8, // change the speed at which it zooms out
+            // This can be any easing function: it takes a number between
+            // 0 and 1 and returns another number between 0 and 1.
+            easing: function (t) {
+                return t;
+            }
+        });
+    }
+});
+
+</script>
+
+</body>
+</html>
